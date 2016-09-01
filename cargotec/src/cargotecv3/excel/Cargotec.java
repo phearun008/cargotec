@@ -17,14 +17,15 @@ import org.apache.poi.ss.usermodel.PictureData;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.apache.poi.util.SystemOutLogger;
 
 import cargotecv3.Content;
 import cargotecv3.Description;
 import cargotecv3.SectionDescription;
 
 public class Cargotec {
-
+	
+	private String fileUrl;
+	
 	public List<Content> readContentList(String fileUrl, int sheetNumber, Integer[] startRow, Integer[] endRow)
 			throws Exception {
 
@@ -251,5 +252,13 @@ public class Cargotec {
 
 		/* new Cargotec().readSectionImages(fileUrl, 0, 0); */
 
+	}
+
+	public String getFileUrl() {
+		return fileUrl;
+	}
+
+	public void setFileUrl(String fileUrl) {
+		this.fileUrl = fileUrl;
 	}
 }
