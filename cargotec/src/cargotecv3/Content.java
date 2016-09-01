@@ -1,7 +1,5 @@
 package cargotecv3;
 
-import java.util.List;
-
 public class Content {
 	private int id;
 	private String chapter;
@@ -10,14 +8,13 @@ public class Content {
 	private String page;
 	
 	private SectionImage sectionImage;
-	private List<SectionDescription> sectionDescription;
+	private SectionDescription sectionDescription;
 	public int getId() {
 		return id;
 	}
 	public void setId(int id) {
 		this.id = id;
 	}
-	
 	public String getDescription() {
 		return description;
 	}
@@ -42,23 +39,21 @@ public class Content {
 	public void setSectionImage(SectionImage sectionImage) {
 		this.sectionImage = sectionImage;
 	}
-	public List<SectionDescription> getSectionDescription() {
-		return sectionDescription;
-	}
-	public void setSectionDescription(List<SectionDescription> sectionDescription) {
-		this.sectionDescription = sectionDescription;
-	}
 	public String getChapter() {
 		return chapter;
 	}
 	public void setChapter(String chapter) {
 		this.chapter = chapter;
 	}
+	public SectionDescription getSectionDescription() {
+		return sectionDescription;
+	}
+	public void setSectionDescription(SectionDescription sectionDescription) {
+		this.sectionDescription = sectionDescription;
+	}
 	@Override
 	public String toString() {
 		return "Content [id=" + id + ", chapter=" + chapter + ", description=" + description + ", re=" + re + ", page="
 				+ page + ", sectionImage=" + sectionImage + ", sectionDescription=" + sectionDescription + "]";
 	}
-	
-	
 }
