@@ -64,34 +64,34 @@ public class Cargotec {
 	}
 
 	public void readSectionImages(String fileUrl, int sheetNumber, int startRow) throws Exception {
-		
+
 		try {
 			FileInputStream inputStream = new FileInputStream(new File(fileUrl));
 			Workbook workbook = WorkbookFactory.create(inputStream);
 			Sheet sheet = workbook.getSheetAt(sheetNumber);
 
-			//System.out.println("=>> START ROW: " + startRow);
-			
-			//TODO: jump to section row
+			// System.out.println("=>> START ROW: " + startRow);
+
+			// TODO: jump to section row
 			HSSFRow r = (HSSFRow) sheet.getRow(startRow);
 			String section = r.getCell(0).toString();
-			
-			//TODO: jump to section title
+
+			// TODO: jump to section title
 			r = (HSSFRow) sheet.getRow(startRow + 1);
 			String title = r.getCell(0).toString();
 			String number = r.getCell(5).toString();
-			
-			//TODO: jump to page row
+
+			// TODO: jump to page row
 			r = (HSSFRow) sheet.getRow(startRow + 35);
 			String page = r.getCell(0).toString();
-			
-			//TODO: jump to image row
+
+			// TODO: jump to image row
 			HSSFPatriarch dravingPatriarch = (HSSFPatriarch) sheet.getDrawingPatriarch();
 			List<HSSFShape> shapes = dravingPatriarch.getChildren();
-			
-			//TODO: TO LOOP THROUGH ALL THE IMAGES
+
+			// TODO: TO LOOP THROUGH ALL THE IMAGES
 			Map<Integer, Object> map = new TreeMap<>();
-			
+
 			for (HSSFShape shape : shapes) {
 				if (shape instanceof HSSFPicture) {
 					HSSFPicture hssfPicture = (HSSFPicture) shape;
@@ -102,29 +102,29 @@ public class Cargotec {
 					map.put(row, hssfPicture);
 				}
 			}
-			
+
 			int i = 0;
 			Iterator imageList = map.entrySet().iterator();
-			
+
 			while (imageList.hasNext()) {
 				Map.Entry entry = (Map.Entry) imageList.next();
 				String key = entry.getKey() + "";
-				
-				HSSFPicture image = (HSSFPicture)entry.getValue();
+
+				HSSFPicture image = (HSSFPicture) entry.getValue();
 				PictureData picture = (PictureData) image.getPictureData();
-				String ext = picture.suggestFileExtension(); 
+				String ext = picture.suggestFileExtension();
 				byte[] data = picture.getData();
 				FileOutputStream out = null;
-				out  = new FileOutputStream("IMAGES/PIC_" + (++i) + "." + ext);
+				out = new FileOutputStream("IMAGES/PIC_" + (++i) + "." + ext);
 				out.write(data);
-				
+
 				out.close();
 			}
-			
+
 			System.out.println("YOU HAVE BEEN DONE READING THE EXCEL TO THE DATABASE ALREADY");
 			workbook.close();
 			inputStream.close();
-			
+
 		} catch (Exception e) {
 			System.err.println("[=>MESSAGE: " + e.getMessage() + "...]");
 		}
@@ -141,7 +141,7 @@ public class Cargotec {
 			while (true) {
 				SectionDescription sd = this.readSectionDescription(sheet, startRow);
 				sectionDescriptions.add(sd);
-				//TODO: jump to next description
+				// TODO: jump to next description
 				startRow += 72;
 			}
 		} catch (Exception e) {
@@ -152,14 +152,14 @@ public class Cargotec {
 
 	private SectionDescription readSectionDescription(Sheet sheet, int startRow) throws Exception {
 		try {
-			//System.out.println("=>> START ROW: " + startRow);
+			// System.out.println("=>> START ROW: " + startRow);
 			SectionDescription sectionDescription = new SectionDescription();
 
-			//TODO: jump to section row
+			// TODO: jump to section row
 			HSSFRow r = (HSSFRow) sheet.getRow(startRow);
 			String section = r.getCell(0).toString();
 
-			//TODO: jump to description row
+			// TODO: jump to description row
 			int descriptionMetaRow = startRow + 1;
 			r = (HSSFRow) sheet.getRow(descriptionMetaRow);
 			String title = r.getCell(0).toString();
@@ -184,7 +184,7 @@ public class Cargotec {
 			} catch (Exception e) {
 				System.err.println("[=>MESSAGE: " + e.getMessage() + "...]");
 			}
-			//TODO: jump page row
+			// TODO: jump page row
 			r = (HSSFRow) sheet.getRow(startRow + 35);
 
 			sectionDescription.setPage(r.getCell(0).toString());
@@ -199,61 +199,57 @@ public class Cargotec {
 		}
 	}
 
-	public void combine(String fileUrl) throws Exception{
-		
-		//TODO: Get Content List
-		List<Content> contentList = new Cargotec().readContentList(fileUrl,
-				 1, new Integer[] { 3, 39 }, new Integer[] { 34, 70 });
-		
-		contentList.forEach(content->{
-			String page = content.getPage();
-			
-			System.out.println("Page: " + page);
+	public List<Content> combine(String fileUrl) throws Exception {
+
+		// TODO: Get Content List
+		List<Content> contentList = new Cargotec().readContentList(fileUrl, 1, new Integer[] { 3, 39 },
+				new Integer[] { 34, 70 });
+
+		List<SectionDescription> sectionDescriptions = readSectionDescriptions(fileUrl, 0, 36);
+
+		contentList.forEach(content -> {
 			try {
-				findDescriptionByPage(fileUrl, page);
+				findDescriptionByPage(sectionDescriptions, fileUrl, content);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		});
 		
+		return contentList;
 	}
-	
-	private List<SectionDescription> findDescriptionByPage(String fileUrl, String page) throws Exception{
-		//TODO: Get Description List
-		List<SectionDescription> sectionDescriptions = readSectionDescriptions(fileUrl, 0, 36);
-		
-		if(sectionDescriptions.contains(page)){
-			System.out.println("contain!!");
-		}
-		/*
-		sectionDescriptions.forEach(sd->{
-			if(sd.getPage().equals(page)){
-				
+
+	private void findDescriptionByPage(List<SectionDescription> sectionDescriptions, String fileUrl,
+			Content content) throws Exception {
+		sectionDescriptions.forEach(sd -> {
+			if (sd.getPage().equals(content.getPage())) {
+				content.setSectionDescription(sd);
 			}
-		});*/
-		
-		return null;
+		});
 	}
-	
-	
+
 	public static void main(String[] args) throws Exception {
 		String fileUrl = "D:/Cargotec/cargotec/HIAB18000XGR (201603).xls";
 
-		new Cargotec().combine(fileUrl);
+		List<Content> contentList = new Cargotec().combine(fileUrl);
+		contentList.forEach(content->{
+			System.out.println(content);
+		});
 		
 		
-		 /*List<Content> contentList = new Cargotec().readContentList(fileUrl,
-		 1, new Integer[] { 3, 39 }, new Integer[] { 34, 70 });
-		 
-		 contentList.forEach(content -> { System.out.println(content); });*/
-		 
+		/*
+		 * List<Content> contentList = new Cargotec().readContentList(fileUrl,
+		 * 1, new Integer[] { 3, 39 }, new Integer[] { 34, 70 });
+		 * 
+		 * contentList.forEach(content -> { System.out.println(content); });
+		 */
 
-		/*List<SectionDescription> sectionDescription = new Cargotec().readSectionDescriptions(fileUrl, 0, 36);
-		sectionDescription.forEach(s -> {
-			System.out.println(s);
-		});*/
-		
-		/*new Cargotec().readSectionImages(fileUrl, 0, 0);*/
-		
+		/*
+		 * List<SectionDescription> sectionDescription = new
+		 * Cargotec().readSectionDescriptions(fileUrl, 0, 36);
+		 * sectionDescription.forEach(s -> { System.out.println(s); });
+		 */
+
+		/* new Cargotec().readSectionImages(fileUrl, 0, 0); */
+
 	}
 }
