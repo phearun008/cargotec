@@ -27,6 +27,7 @@ import kh.com.kshrd.v3.repository.ConnectionManagement;
 import kh.com.kshrd.v3.repository.ContentRepository;
 import kh.com.kshrd.v3.threads.CopyExcel;
 import kh.com.kshrd.v3.threads.ExportExcelToPDF;
+import kh.com.kshrd.v3.threads.ImageConverter;
 
 public class CargotecExcel {
 
@@ -137,9 +138,15 @@ public class CargotecExcel {
 			}
 		}
 		String fileLocation = System.getProperty("user.home") + File.separator + "CARGOTEC" + File.separator + "images";
+		String pngLocation =  fileLocation + File.separator + "PNG"; 
+				
 		if (!new File(fileLocation).exists()) {
 			new File(fileLocation).mkdirs();
 		}
+		if (!new File(pngLocation).exists()) {
+			new File(pngLocation).mkdirs();
+		}
+		
 		int i = 0;
 		Iterator imageList = map.entrySet().iterator();
 		while (imageList.hasNext()) {
@@ -156,11 +163,18 @@ public class CargotecExcel {
 			String fileName = "PIC_" + i + "." + ext;
 			String fileDestination = fileLocation + File.separator + fileName;
 
-			images.add(fileDestination);
 			out = new FileOutputStream(fileDestination);
 			out.write(data);
 			out.close();
+			
+			//Convert EMF file to PNG file
+			String fName = "PIC_" + i + ".PNG";
+			String pngOutput = pngLocation + File.separator + fName;
+			ImageConverter.convertEMF(fileDestination, pngOutput);
+			
+			images.add(pngOutput);
 		}
+		
 		return images;
 	}
 
@@ -243,15 +257,6 @@ public class CargotecExcel {
 		// TODO: Get Section Image
 		List<SectionImage> sectionImages = readSectionImages(fileUrl, 0, 0);
 
-		/*contentList.forEach(content -> {
-			try {
-				findDescriptionByPage(sectionDescriptions, content);
-				findImageByPage(sectionImages, content);
-			} catch (Exception e) {
-				System.err.println("[=>MESSAGE: " + e.getMessage() + "...[Method: combine(String)]]");
-			}
-		});*/
-		
 		for(Content content: contentList){
 			try {
 				findDescriptionByPage(sectionDescriptions, content);
@@ -265,10 +270,6 @@ public class CargotecExcel {
 	}
 
 	private void findDescriptionByPage(List<SectionDescription> sectionDescriptions, Content content) throws Exception {
-		/*sectionDescriptions.forEach(sd -> {
-			if (sd.getPage().equals(content.getPage()))
-				content.setSectionDescription(sd);
-		});*/
 		
 		for(SectionDescription sd: sectionDescriptions){
 			if (sd.getPage().equals(content.getPage()))
@@ -277,18 +278,6 @@ public class CargotecExcel {
 	}
 
 	private void findImageByPage(List<SectionImage> sectionImages, Content content) {
-		/*sectionImages.forEach(si -> {
-			String contentPage = content.getPage();
-			String sectionPage = si.getPage();
-			if (sectionPage.contains(".")) {
-				contentPage = contentPage.substring(0, contentPage.indexOf("-")).trim();
-				sectionPage = sectionPage.substring(0, sectionPage.indexOf(".")).trim();
-			}
-			if (sectionPage.equals(contentPage)) {
-				content.setSectionImage(si);
-			}
-		});*/
-		
 		for(SectionImage si: sectionImages){
 			String contentPage = content.getPage();
 			String sectionPage = si.getPage();
@@ -303,8 +292,12 @@ public class CargotecExcel {
 	}
 
 	public static void main(String[] args) throws Exception {
+		
+		System.out.println("[=>>Starting...]");
+		
 		new PropertiesManagement();
 		// String fileUrl = "D:\\Cargotec\\cargotec\\HIAB18000XGR(201603).xls";
+		
 		ConnectionManagement.getConnection().setAutoCommit(false);
 		try {
 			if (args.length > 0) {
