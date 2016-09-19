@@ -51,6 +51,4 @@ public class SectionDescription {
 		return "SectionDescription [id=" + id + ", section=" + section + ", title=" + title + ", number=" + number
 				+ ", page=" + page + ", description=" + description + "]";
 	}
-	
-	
 }
